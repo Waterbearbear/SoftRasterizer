@@ -8,11 +8,9 @@ This project was inspired from [ssloy](https://github.com/ssloy)/**[tinyrenderer
 
 ## ScreenShots
 
-![image-20210326160630849](C:\Users\asus\AppData\Roaming\Typora\typora-user-images\image-20210326160630849.png)
+![image-20210326160630849](https://github.com/Waterbearbear/SoftRasterizer/blob/main/output/texture.png?raw=true)
 
-
-
-![image-20210326160647373](C:\Users\asus\AppData\Roaming\Typora\typora-user-images\image-20210326160647373.png)
+![image-20210326160647373](https://github.com/Waterbearbear/SoftRasterizer/blob/main/output/texture1.png?raw=true)
 
 
 
