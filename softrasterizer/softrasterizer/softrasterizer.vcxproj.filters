@@ -24,6 +24,9 @@
     <ClCompile Include="tgaimage.cpp">
       <Filter>头文件</Filter>
     </ClCompile>
+    <ClCompile Include="geometry.cpp">
+      <Filter>头文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">

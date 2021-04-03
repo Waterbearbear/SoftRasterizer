@@ -1,5 +1,12 @@
 ﻿#include "tgaimage.h"
 #include "model.h"
+#include <algorithm>
+#include <cassert>
+#include <iostream>
+//#include "geometry.h"
+
+
+#define pi 3.14151926
 
 const TGAColor white = TGAColor(255, 255, 255, 255);
 const TGAColor red = TGAColor(255, 0, 0, 255);
@@ -82,7 +89,7 @@ Vec3f barycentric(Vec2i *pts, Vec2i P) {
 
 
 	//计算在屏幕空间中的重心坐标
-	Vec3f u = cross(Vec3f(pts[2].x - pts[0].x, pts[1].x - pts[0].x, pts[0].x - P.x), Vec3f(pts[2].y - pts[0].y, pts[1].y - pts[0].y, pts[0].y - P.y));
+	Vec3f u = Vec3f(pts[2].x - pts[0].x, pts[1].x - pts[0].x, pts[0].x - P.x) ^ Vec3f(pts[2].y - pts[0].y, pts[1].y - pts[0].y, pts[0].y - P.y);
 	/* `pts` and `P` has integer value as coordinates
 	   so `abs(u[2])` < 1 means `u[2]` is 0, that means
 	   triangle is degenerate, in this case return something with negative coordinates */
@@ -93,11 +100,12 @@ Vec3f barycentric(Vec2i *pts, Vec2i P) {
 
 Vec3f barycentric(Vec3f *pts, Vec3i P)
 {
-	Vec3f uv1 = cross(Vec3f(pts[2].x - pts[0].x, pts[1].x - pts[0].x, pts[0].x - P.x), Vec3f(pts[2].y - pts[0].y, pts[1].y - pts[0].y, pts[0].y - P.y));
+	Vec3f uv1 = Vec3f(pts[2].x - pts[0].x, pts[1].x - pts[0].x, pts[0].x - P.x) ^ Vec3f(pts[2].y - pts[0].y, pts[1].y - pts[0].y, pts[0].y - P.y);
 	
 
 	if (std::abs(uv1.z) < 1) return Vec3f(-1, 1, 1);
 	return Vec3f(1.f - (uv1.x + uv1.y) / uv1.z, uv1.y / uv1.z, uv1.x / uv1.z);
+
 }
 
 bool  P_in_triangle(Vec2i *pts, Vec2i p)
@@ -242,7 +250,7 @@ void fullfill_triangle_zbuffer(Vec3f *tri, float *zbuffer, TGAImage &image, TGAC
 }
 
 
-void fullfill_triangle_zbuffer_texture(Vec3f *tri, float *zbuffer,Vec3f *texture_cords, TGAImage &image, TGAImage &texture_image)
+void fullfill_triangle_zbuffer_texture(Vec3f *tri, float *zbuffer,Vec3f *texture_cords, TGAImage &image, TGAImage &texture_image,float intensity)
 {
 	Vec2i bboxmax(0, 0);
 	Vec2i bboxmin(image.get_width() - 1, image.get_height() - 1);
@@ -269,7 +277,7 @@ void fullfill_triangle_zbuffer_texture(Vec3f *tri, float *zbuffer,Vec3f *texture
 
 			Vec3f interpo_coefficient = barycentric(tri, P);
 
-			if (interpo_coefficient.x < 0 || interpo_coefficient.y < 0 || interpo_coefficient.z < 0) continue;
+			if(interpo_coefficient.x < 0 || interpo_coefficient.y < 0 || interpo_coefficient.z < 0) continue;
 
 			for (int i = 0; i < 3; i++)
 			{
@@ -277,12 +285,14 @@ void fullfill_triangle_zbuffer_texture(Vec3f *tri, float *zbuffer,Vec3f *texture
 				P_texture.x  +=  texture_cords[i].x * interpo_coefficient[i];
 				P_texture.y  +=  texture_cords[i].y * interpo_coefficient[i];
 			}
+
 			if (zbuffer[P.x + P.y * width] < Pz)
 			{
 				zbuffer[P.x + P.y * width] = Pz;
 				
 				TGAColor color = texture_image.get((int) (P_texture.x * texture_width), (int)(P_texture.y * texture_height));
-				image.set(P.x, P.y, color);
+				//TGAColor color2(255, 255, 255);
+				image.set(P.x, P.y, color * intensity);
 
 
 			}
@@ -291,10 +301,223 @@ void fullfill_triangle_zbuffer_texture(Vec3f *tri, float *zbuffer,Vec3f *texture
 }
 
 
+
+
 Vec3f worldtoscreen(Vec3f world_cords)
 {
 	return Vec3f(int((world_cords.x + 1.)*width / 2), int((world_cords.y + 1.) * height / 2), world_cords.z);
 }
+
+Vec3f To_Homo_vec(Vec3f &vec , int x)
+{
+	Vec3f Homo_vec;
+
+	for (int i = 0; i < 4; i++)
+	{
+		if (i < 3)
+		{
+			Homo_vec[i] = vec[i];
+		}
+		else
+		{
+			Homo_vec[i] = x;
+		}
+	}
+
+	return Homo_vec;
+
+}
+
+
+Matrix rotate(const float &rotation,int axis)
+{
+	Matrix temp(4,4);
+
+	temp = temp.identity(4);
+
+	float arc = rotation / 180 * 3.14159;
+
+
+
+	return temp;
+}
+
+Matrix translate(const float &scale,const Vec3f &translation , const float &shear = 0)
+{
+	//Matrix rotation_mat(4, 4);
+	Matrix translation_mat;
+	translation_mat = translation_mat.identity(4);
+
+
+	translation_mat[0][3] = translation.x;
+	translation_mat[1][3] = translation.y;
+	translation_mat[2][3] = translation.z;
+
+
+
+
+	return translation_mat;
+
+}
+
+Matrix view(Vec3f camera_position,Vec3f camera_lookat,Vec3f camera_up)
+{
+	Matrix Tview;
+	//Matrix Rview;
+	
+
+	//g不是应该取反方向吗？
+	Vec3f z =    (camera_position - camera_lookat).normalize();
+	//g.normalize();
+	/*Vec3f t = camera_up;*/
+	Vec3f x = (camera_up ^ z).normalize();
+	Vec3f y = (z ^ x).normalize();
+	
+
+	//t.normalize();
+
+	//e.normalize();
+
+
+	Tview = Tview.identity(4);
+	Tview[0][3] = -camera_position.x;
+	Tview[1][3] = -camera_position.y;
+	Tview[2][3] = -camera_position.z;
+
+	Matrix Rview;
+	Rview = Rview.identity(4);
+
+	for (int i = 0; i < 3; i++) {
+		Rview[0][i] = x[i];
+		Rview[1][i] = y[i];
+		Rview[2][i] = z[i];
+		//Rview[i][3] = -Rview[i];
+	}
+
+	Rview[3][3] = 1.0;
+	
+
+	return Rview * Tview;
+}
+
+
+Matrix Otho_projection(float r, float l, float t,  float b,  float n,  float f)
+{
+	Matrix Otho_mat(4, 4);
+
+	Otho_mat = Otho_mat.identity(4);
+
+
+	/*if (r < l) std::swap(r,l);
+	if (t < b)std::swap(t, b);
+	if (n < f)std::swap(n, f);*/
+
+	Otho_mat[0][0] = 2 / (r - l);
+	Otho_mat[1][1] = 2 / (t - b);
+	Otho_mat[2][2] = 2 / (n - f);
+	Otho_mat[3][3] = 1;
+
+	Otho_mat[0][3] = -(r + l) / (r - l);
+	Otho_mat[1][3] = -(t + b) / (t - b);
+	Otho_mat[2][3] = -(n + f) / (n - f);
+
+	return Otho_mat;
+}
+
+Matrix Perspective_projection(float n, float f,float aspect_ratio,float fov)
+{
+	Matrix perspective(4,4);
+	perspective = perspective.identity(4);
+
+	//assert(n > f);
+
+	/*if (r < l) std::swap(r, l);
+	if (t < b)std::swap(t, b);
+	if (n < f)std::swap(n, f);*/
+
+	float arc_half_fov = pi * (fov / 2) / 180;
+	float t = std::abs(n)  * std::tan(arc_half_fov) ;
+	float r = aspect_ratio * t;
+
+	float b = -t;
+	float l = -r;
+
+
+	/*perspective[0][0] = 2 * n / (r - l);
+	perspective[1][1] = 2 * n / (t - b);
+	perspective[2][2] = (f + n) / (n - f);
+	perspective[3][3] = 0;
+
+
+	perspective[0][2] = (l + r) / (l - r);
+	perspective[1][2] = (b + t) / (b - t);
+	perspective[2][2] = (2 * f*n) / (f - n);
+	perspective[3][2] = 1;*/
+
+	/*perspective[0][0] = n;
+	perspective[1][1] = n;
+	perspective[2][2] = n + f;
+	perspective[2][3] = -f * n;
+	perspective[3][2] = 1;
+	perspective[3][3] = 0;
+	
+	Matrix otho_perject_mat = Otho_projection(r, l, t, b, n, f);*/
+
+	perspective[0][0] = 2 * n / (r - l);
+	perspective[0][2] = (l + r) / (l - r);
+	perspective[1][1] = 2 * n / (t - b);
+	perspective[1][2] = (b + t) / (b - t);
+	perspective[2][2] = (f + n) / (n - f);
+	perspective[2][3] = (2 * f * n) / (f - n);
+	perspective[3][2] = 1.0;
+	perspective[3][3] = 0.0;
+
+	//perspective[3][2] = -1.f / 1;
+
+	//为什么是这个顺序???
+	//return perspective * otho_perject_mat;
+	//return otho_perject_mat * perspective;
+	return perspective;
+
+
+}
+
+Matrix viewport(const float &width,const float &height)
+{
+	Matrix viewport_mat(4, 4);
+	viewport_mat = viewport_mat.identity(4);
+
+
+	viewport_mat[0][0] = width / 2.0;
+	viewport_mat[1][1] = height / 2.0;
+	viewport_mat[2][2] = 1.f;
+	viewport_mat[3][3] = 1.f;
+
+
+	viewport_mat[0][3] = (width )/ 2.0;
+	viewport_mat[1][3] = (height )/ 2.0;
+
+	return viewport_mat;
+}
+
+Vec3f m2v(Matrix mat)
+{
+	return Vec3f(mat[0][0]/mat[3][0], mat[1][0]/mat[3][0], mat[2][0]/mat[3][0]);
+}
+
+Matrix v2m(const Vec3f &vec)
+{
+	Matrix temp(4, 1);
+
+	temp[0][0] = vec.x;
+	temp[1][0] = vec.y;
+	temp[2][0] = vec.z;
+	temp[3][0] = 1.f;
+
+	return temp;
+}
+
+
 
 int main(int argc, char** argv) {
 
@@ -307,10 +530,7 @@ int main(int argc, char** argv) {
 
 	TGAImage image(width, height, TGAImage::RGB);
 	TGAImage texture_image;
-
-
 	
-
 	texture_image.read_tga_file(texture_path);
 
 	texture_image.flip_vertically();
@@ -320,16 +540,26 @@ int main(int argc, char** argv) {
 
 	Model obj(path);
 	Model *model = &obj;
+	float l = -1.0;
+	float r = 1.0;
 
+	float t = 2.0;
+	float b = -2.0;
 
+	float n = -0.1f;
+	float f = -200.0f;
 
-	Vec2i a(512 - 256, 512);
-	Vec2i b(512 + 256, 512);
-	Vec2i c(512, 512 - 256);
-	Vec2i d(512 + 256 + 64, 512);
-	Vec2i f(512 + 256, 800);
-	Vec2i g(512 - 256 - 128, 512 - 128);
-	Vec2i h(512 - 256, 256);
+	float aspect_ratio = 1.0;
+	float fov = 80;
+
+	Vec3f camera_position(0.25, 0.5 , 1.25);
+	Vec3f camera_lookat(0., 0., .0);
+	Vec3f camera_up(0., 1., 0.);
+	
+
+	Vec3f light(0., 0., -1.0);
+	Vec3f tranlate(0.f, 0.f, -2.f);
+
 
 	Vec2i up_left(256, 256);
 	Vec2i up_right(512, 256);
@@ -337,9 +567,16 @@ int main(int argc, char** argv) {
 	Vec2i bottom_left(256, 512);
 	Vec2i bottom_right(512, 512);
 
-	Vec2i t0[3] = { a,b,c };
-	Vec2i t1[3] = { a,g,h };
-	Vec2i t2[3] = { b,d,f };
+
+	Matrix perspective_mat = Perspective_projection(n,f,aspect_ratio,fov);
+
+	Matrix otho_mat = Otho_projection(r, l, t, b, n, f);
+
+	Matrix tranlate_mat = translate(0.f, tranlate, 0.f);
+
+	Matrix view_mat = view(camera_position, camera_lookat, camera_up);
+
+	Matrix viewport_mat = viewport(width, height);
 
 
 //	Model model(path);
@@ -435,10 +672,15 @@ int main(int argc, char** argv) {
 	//}
 
 	//5. Z-buffer
-	Vec3f light(0., 0., 1.);
-	
 
-	for (int i = 0; i < model->nfaces(); i++)
+	std::cerr << view_mat << std::endl;
+	std::cerr << perspective_mat << std::endl;
+	std::cerr << viewport_mat << std::endl;
+	Matrix z = (viewport_mat*perspective_mat*view_mat);
+	std::cerr << z << std::endl;
+
+
+	for(int i = 0; i < model->nfaces(); i++)
 	{
 		std::vector<int> face = model->face(i);
 		std::vector<int> texture_face = model->texture_face(i);
@@ -446,43 +688,54 @@ int main(int argc, char** argv) {
 		Vec3f texture_coords[3];
 		Vec3f screen_coords[3];
 
-
+		bool flag = false;
 		for (int j = 0; j < 3; j++)
 		{
-			world_coords[j] = model->vert(face[j]);
+			Vec3f v = model->vert(face[j]);
 			texture_coords[j] = model->texture(texture_face[j]);
 
-			Vec3f v = world_coords[j];
+			world_coords[j] = v;
 
-			screen_coords[j] = worldtoscreen(v);
 
+			screen_coords[j] = m2v(viewport_mat * perspective_mat * view_mat  * v2m(v));
+
+
+			if (screen_coords[j].x > width) screen_coords[j].x = width;
+			if (screen_coords[j].x < 0)		screen_coords[j].x = 0;
+			if (screen_coords[j].y > height) screen_coords[j].y = height;
+			if (screen_coords[j].y < 0)		screen_coords[j].y = 0;
+
+			/*if (screen_coords[j].x > width ||
+				(screen_coords[j].x < 0) ||
+				(screen_coords[j].y > height) ||
+				(screen_coords[j].y < 0))
+			{
+				flag = true;
+			}*/
 		}
 
 
-		Vec3f n = cross((world_coords[1] - world_coords[0]),(world_coords[2] - world_coords[0]));
+		Vec3f n = (world_coords[2] - world_coords[0]) ^ (world_coords[1] - world_coords[0]);
+		//Vec3f n = (screen_coords[2] - screen_coords[0]) ^ (screen_coords[1] - screen_coords[0]);
 		n.normalize();
 		auto intensity = n * light;
 
-		if (intensity > 0)
+		if (intensity > 0 && !flag )
 		{
 
 			/*fullfill_triangle_bc(screen_coords, image, tgacolor(intensity * 255, intensity * 255, intensity * 255, 255));*/
 			//fullfill_triangle_zbuffer(screen_coords, zbuffer, image, tgacolor(intensity * 255, intensity * 255, intensity * 255, 255));
-			fullfill_triangle_zbuffer_texture(screen_coords, zbuffer, texture_coords, image, texture_image);
-
+			fullfill_triangle_zbuffer_texture(screen_coords, zbuffer, texture_coords, image, texture_image, intensity);
 
 		}
 
 		//vec3f world_coords = model->vert(face[])
-	}
 
-	
+	}
 
 
 	//image.flip_vertically(); // i want to have the origin at the left bottom corner of the image
-	image.write_tga_file("texture rendering.tga");
+	image.write_tga_file("perspective rendering_2.tga");
 	return 0;
-
-
 
 }

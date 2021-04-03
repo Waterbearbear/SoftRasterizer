@@ -44,7 +44,7 @@ Model::Model(const char *filename) : verts_(), faces_() ,textures_(){
 			texture_faces_.push_back(f_texture);
 		}
 	}
-	std::cerr << "# v# " << verts_.size() << " f# " << faces_.size() << ' vt#' << textures_.size() << std::endl;
+	std::cerr << "# v# " << verts_.size() << " f# " << faces_.size() << " vt#" << textures_.size() << std::endl;
 }
 
 Model::~Model() {

@@ -1,104 +1,125 @@
 ﻿  softrasterizer.cpp
 d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\tgaimage.h(45): warning C4244: “=”: 从“double”转换到“uint8_t”，可能丢失数据
-d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(31): warning C4244: “初始化”: 从“double”转换到“int”，可能丢失数据
-d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(85): warning C4244: “参数”: 从“T”转换到“T”，可能丢失数据
+d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(38): warning C4244: “初始化”: 从“double”转换到“int”，可能丢失数据
+d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(92): warning C4244: “参数”: 从“t”转换到“t”，可能丢失数据
           with
           [
-              T=int
+              t=int
           ]
           and
           [
-              T=float
+              t=float
           ]
-d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(216): warning C4244: “=”: 从“T”转换到“T”，可能丢失数据
+d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(224): warning C4244: “=”: 从“t”转换到“t”，可能丢失数据
           with
           [
-              T=float
+              t=float
           ]
           and
           [
-              T=int
+              t=int
           ]
-d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(217): warning C4244: “=”: 从“T”转换到“T”，可能丢失数据
+d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(225): warning C4244: “=”: 从“t”转换到“t”，可能丢失数据
           with
           [
-              T=float
+              t=float
           ]
           and
           [
-              T=int
+              t=int
           ]
-d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(218): warning C4244: “=”: 从“T”转换到“T”，可能丢失数据
+d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(226): warning C4244: “=”: 从“t”转换到“t”，可能丢失数据
           with
           [
-              T=float
+              t=float
           ]
           and
           [
-              T=int
+              t=int
           ]
-d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(219): warning C4244: “=”: 从“T”转换到“T”，可能丢失数据
+d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(227): warning C4244: “=”: 从“t”转换到“t”，可能丢失数据
           with
           [
-              T=float
+              t=float
           ]
           and
           [
-              T=int
+              t=int
           ]
-d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(256): warning C4244: “=”: 从“T”转换到“T”，可能丢失数据
+d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(264): warning C4244: “=”: 从“t”转换到“t”，可能丢失数据
           with
           [
-              T=float
+              t=float
           ]
           and
           [
-              T=int
+              t=int
           ]
-d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(257): warning C4244: “=”: 从“T”转换到“T”，可能丢失数据
+d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(265): warning C4244: “=”: 从“t”转换到“t”，可能丢失数据
           with
           [
-              T=float
+              t=float
           ]
           and
           [
-              T=int
+              t=int
           ]
-d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(258): warning C4244: “=”: 从“T”转换到“T”，可能丢失数据
+d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(266): warning C4244: “=”: 从“t”转换到“t”，可能丢失数据
           with
           [
-              T=float
+              t=float
           ]
           and
           [
-              T=int
+              t=int
           ]
-d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(259): warning C4244: “=”: 从“T”转换到“T”，可能丢失数据
+d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(267): warning C4244: “=”: 从“t”转换到“t”，可能丢失数据
           with
           [
-              T=float
+              t=float
           ]
           and
           [
-              T=int
+              t=int
           ]
-d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(296): warning C4244: “参数”: 从“int”转换到“T”，可能丢失数据
+d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(308): warning C4244: “参数”: 从“int”转换到“t”，可能丢失数据
           with
           [
-              T=float
+              t=float
           ]
-d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\geometry.h(64): warning C4244: “*=”: 从“const U”转换到“T”，可能丢失数据
+d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(323): warning C4244: “=”: 从“int”转换到“t”，可能丢失数据
           with
           [
-              U=float
+              t=float
           ]
-          and
-          [
-              T=int
-          ]
-  d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(148): note: 参见对正在编译的函数 模板 实例化“vec<2,int> operator *<2,int,float>(vec<2,int>,const U &)”的引用
+d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(338): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(438): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(491): warning C4244: “=”: 从“double”转换到“_Ty”，可能丢失数据
           with
           [
-              U=float
+              _Ty=float
           ]
+d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(492): warning C4244: “=”: 从“double”转换到“_Ty”，可能丢失数据
+          with
+          [
+              _Ty=float
+          ]
+d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(497): warning C4244: “=”: 从“double”转换到“_Ty”，可能丢失数据
+          with
+          [
+              _Ty=float
+          ]
+d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(498): warning C4244: “=”: 从“double”转换到“_Ty”，可能丢失数据
+          with
+          [
+              _Ty=float
+          ]
+d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\geometry.h(15): warning C4244: “参数”: 从“float”转换到“t”，可能丢失数据
+          with
+          [
+              t=int
+          ]
+  d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\geometry.h(15): note: 编译 类 模板 成员函数 "Vec2<int> Vec2<int>::operator *(float) const" 时
+  d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(156): note: 参见对正在编译的函数 模板 实例化“Vec2<int> Vec2<int>::operator *(float) const”的引用
+  d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(61): note: 参见对正在编译的 类 模板 实例化 "Vec2<int>" 的引用
   softrasterizer.vcxproj -> D:\project\zjx\GameDevoplement\SoftRasterizer\softrasterizer\Debug\softrasterizer.exe
