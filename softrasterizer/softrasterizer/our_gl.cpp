@@ -194,31 +194,24 @@ Matrix perspective_projection(const float n, const float f, const float aspect_r
 
 Matrix Otho_projection(float r, float l, float t, float b, float n, float f)
 {
-	Matrix Otho_mat;
+	Matrix scale;
 
-	Otho_mat = Otho_mat.identity();
+	scale = scale.identity();
+
+	scale[0][0] = 2 / (r - l);
+	scale[1][1] = 2 / (t - b);
+	scale[2][2] = 2 / (n - f);
+	scale[3][3] = 1;
+
+	Matrix trans;
+	trans = trans.identity();
+	
+	trans[0][3] = -(r + l) / 2.f;
+	trans[1][3] = -(t + b) / 2.f;
+	trans[2][3] = - (n + f) / 2.f;
 
 
-	/*if (r < l) std::swap(r,l);
-	if (t < b)std::swap(t, b);
-	if (n < f)std::swap(n, f);*/
-
-	Otho_mat[0][0] = 2 / (r - l);
-	Otho_mat[1][1] = 2 / (t - b);
-	Otho_mat[2][2] = 2 / (n - f);
-	Otho_mat[3][3] = 1;
-
-	/*Otho_mat[0][3] = -(r + l) / (r - l);
-	Otho_mat[1][3] = -(t + b) / (t - b);
-	Otho_mat[2][3] = -(n + f) / (n - f);*/
-
-	Otho_mat[0][3] = -(r + l) / 2.f;
-	Otho_mat[1][3] = -(t + b) / 2.f;
-	Otho_mat[2][3] = - (n + f)/2.f;
-
-	Otho_mat[3][3] = 1.f;
-
-	return Otho_mat;
+	return scale * trans;
 }
 
 Matrix viewport(const size_t width, const size_t height)
@@ -297,11 +290,11 @@ void rasterizer(Vec3f *screen_tri, Shader &shader, float *zbuffer, TGAImage &ima
 			if (zbuffer[P.x + P.y * width] < Pz)
 			{
 				zbuffer[P.x + P.y * width] = Pz;
-				
+				//std::cerr << "px: " << P.x << "," << "py: " << P.y << "," << "pz: " << Pz << std::endl;
+
 				//TGAColor color = texture_image.get((int)(P_texture.x * texture_width), (int)(P_texture.y * texture_height));
 				//TGAColor color2(255, 255, 255);
 				//image.set(P.x, P.y, color * intensity);
-				
 				bool discard = shader.fragment(interpo_coefficient, color);
 
 				if (!discard)
@@ -315,6 +308,10 @@ void rasterizer(Vec3f *screen_tri, Shader &shader, float *zbuffer, TGAImage &ima
 
 Mat3 calulateTBN(Vec3f *tri, Vec3f *uv,Vec3f normal)
 {
+
+	//tri : 世界坐标
+	//uv  : 贴图坐标
+	//normal : 世界坐标里插值来的normal
 	Vec3f edge1 = tri[1] - tri[0];
 	Vec3f edge2 = tri[2] - tri[0];
 	Vec3f deltaUV1 = uv[1] - uv[0];

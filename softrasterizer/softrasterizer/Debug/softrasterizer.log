@@ -3,7 +3,7 @@ d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\tgai
 d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(10): warning C4005: “pi”: 宏重定义
   d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\our_gl.h(6): note: 参见“pi”的前一个定义
 d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(16): warning C4305: “初始化”: 从“double”到“float”截断
-d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(127): warning C4244: “参数”: 从“float”转换到“const uint8_t”，可能丢失数据
+d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(126): warning C4244: “参数”: 从“float”转换到“const uint8_t”，可能丢失数据
 d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(237): warning C4244: “=”: 从“double”转换到“T”，可能丢失数据
           with
           [
@@ -19,8 +19,9 @@ d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\soft
           [
               T=float
           ]
-d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(292): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
-d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(304): warning C4244: “=”: 从“const _Ty”转换到“uint8_t”，可能丢失数据
+d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(269): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(277): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+d:\project\zjx\gamedevoplement\softrasterizer\softrasterizer\softrasterizer\softrasterizer.cpp(288): warning C4244: “=”: 从“const _Ty”转换到“uint8_t”，可能丢失数据
           with
           [
               _Ty=float

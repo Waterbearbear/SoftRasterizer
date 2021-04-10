@@ -1,40 +1,87 @@
-# HandCraft Rasterizer Renderer
+# SoftRasterizer
 
-This project was inspired from [ssloy](https://github.com/ssloy)/**[tinyrenderer](https://github.com/ssloy/tinyrenderer)**
+该软光栅渲染器受  [ssloy](https://github.com/ssloy)/**[tinyrenderer](https://github.com/ssloy/tinyrenderer)** 启发与其教程的学习。为了更好地理解光栅化、实时渲染机器的知识，再次记录自己在开发软光栅渲染器中实现的效果以及遇到的问题。
 
  This Renderer is a software rasterizer written by C++ .The proposal for writing this is for better understanding computer graphics concept and knowledge.
 
-## ScreenShots
+### 学习过程中的资料
 
-![image-20210326160630849](https://github.com/Waterbearbear/SoftRasterizer/blob/main/output/texture.png?raw=true)
+- 《C++ prime》
+- GAMES101、GAMES202
 
-![image-20210326160647373](https://github.com/Waterbearbear/SoftRasterizer/blob/main/output/texture1.png?raw=true)
+- https://learnopengl.com/
 
+- 《fundamentals of computer graphics》
 
+- 《real-time redering  》
+
+- 《RTR3提炼总结》
 
 
 
 ## Features
 
-- Texture mapping
-- z-buffer
+- Camera moving
+- Light moving
+- orthographic projection
 - perspective projection
-- GouraudShader
-- Bling-Phong
+- zbuffer
+- Gouraud render
+- Phong render
 - Normal mapping
-- Tangent normal mapping
+- Tangent space normal mapping
+- Shadow mapping
+
+## TODO List
+
+- [ ] 添加多个物体
+- [ ] 透视矫正
+- [ ] MSAA
+- [ ] SSAA
+- [ ] PCSS
+- [ ] Ambient Occlusion
+
+## ScreenShots
+
+### Basic model  
 
 
 
-## Debug日志  
+![image-20210326160630849](https://github.com/Waterbearbear/SoftRasterizer/blob/main/output/texture.png?raw=true)
+
+  ![diabolo_show](D:\project\zjx\GameDevoplement\SoftRasterizer\output\diabolo_show.png)
+
+### Rendering  
+
+
+
+![show1](D:\project\zjx\GameDevoplement\SoftRasterizer\output\show1.png)
+
+![diabolo_shadow_show](D:\project\zjx\GameDevoplement\SoftRasterizer\output\diabolo_shadow_show.png)
+
+![man_shadow_show](D:\project\zjx\GameDevoplement\SoftRasterizer\output\man_shadow_show.png)
+
+
+
+
+
+
+
+
+
+## Troubleshooting  
 
 
 ### 1.渲染的图像有横纵裂纹  
 
+![image-20210405152927370](D:\project\zjx\GameDevoplement\SoftRasterizer\output\1-1.png)
 
-![image-20210405152927370](C:\Users\asus\AppData\Roaming\Typora\typora-user-images\image-20210405152927370.png)
+![1-2](D:\project\zjx\GameDevoplement\SoftRasterizer\output\1-2.png)
 
-- 遍历屏幕像素时用了浮点数，应该将插值得到的屏幕位置用整型表示，这样就不会出错，同时将插值的Z额外用浮点保存。  
+
+
+- 问题：遍历屏幕像素时用了浮点数float
+- 解决方案： 应该将插值得到的屏幕位置用整型表示，同时将插值的Z额外用浮点保存。  
 
 
 
@@ -42,72 +89,58 @@ This project was inspired from [ssloy](https://github.com/ssloy)/**[tinyrenderer
 
 
 
-![QQ图片20210405153445](D:\project\zjx\GameDevoplement\SoftRasterizer\output\QQ图片20210405153445.png)
+![QQ图片20210405153445](D:\project\zjx\GameDevoplement\SoftRasterizer\output\2-1.png)
 
 
 
-- TGAColor的初始化是BGR，不是RGB。所以color[2] 和 color[0]反了。
+- TGAColor的初始化是BGR，不是RGB。所以color[2] 和 color[0]反了导致颜色呈蓝色。
 
 
 
 ### 3. 图像变成了左手系的原因  
 
 
-![image-20210405153810153](C:\Users\asus\AppData\Roaming\Typora\typora-user-images\image-20210405153810153.png)
+![image-20210405153810153](D:\project\zjx\GameDevoplement\SoftRasterizer\output\3-1.png)
 
-![image-20210405183213062](C:\Users\asus\AppData\Roaming\Typora\typora-user-images\image-20210405183213062.png)
+![image-20210405183213062](D:\project\zjx\GameDevoplement\SoftRasterizer\output\3-2.png)
 
 - 正面的法线方向是朝着Z轴的，和朝着-z方向的光照 所成夹角应该是负的。 
-
-
 
 ### 4.纹理映射错误  
 
 
 
-![image-20210405180353833](C:\Users\asus\AppData\Roaming\Typora\typora-user-images\image-20210405180353833.png)
+![image-20210405180353833](D:\project\zjx\GameDevoplement\SoftRasterizer\output\4-1.png)
 
 
 
-
-
-
-
-
+- 所有的纹理是混乱的，而不是上下颠倒或者左右翻转。那么就考虑是在数据读取阶段出了问题，最后查出使用了错误的三角形索引
 
 ### 5.透视投影错误  
 
 
 
-![image-20210405184750541](C:\Users\asus\AppData\Roaming\Typora\typora-user-images\image-20210405184750541.png)
+![image-20210405184750541](D:\project\zjx\GameDevoplement\SoftRasterizer\output\5-1.png)
 
 
 
-齐次坐标转换时，直接用了(x,y,z) . 没有除以最后一项。 
+- 齐次坐标转换时，直接用了(x,y,z) . 没有除以最后一项。 
 
-透视投影后，齐次项的表示有可能是（x,y,z, 2) 这种形式 ， 整个坐标要除以最后的齐次项才正确 ，如：（x/2 , y/2 , z/2 , 1) 
+- 透视投影后，齐次项的表示有可能是（x,y,z, 2) 这种形式 ， 整个坐标要除以最后的齐次项才正确 ，如：（x/2 , y/2 , z/2 , 1) 
 
 
 
 ### 6.Bling-Phong模型 （用ks 还是 I来描述颜色？）
 
+![preview](D:\project\zjx\GameDevoplement\SoftRasterizer\output\6-1.jpg)
 
 
 
 
-#### 
 
-![preview](https://pic3.zhimg.com/v2-4592bb9c2faa811358c0de63516538ae_r.jpg)
+用系数值ka、ks、kd表示贴图读取的值，    I以及r进行另外设置。
 
-
-
-![image-20210407140117214](C:\Users\asus\AppData\Roaming\Typora\typora-user-images\image-20210407140117214.png)
-
-spec： 
-
-按照这个表示方法，那么就是c * 
-
-明显是用系数值ka、ks、kd.      diffuse和specular和I是代表的光照强度。
+（当光源距离固定时、光源的光照强度越强，则物体表面被照亮的强度就应该越高。）
 
 kd , ks--> TGAColor （0-255）
 
@@ -117,7 +150,7 @@ ka --> (0 - 1)  Ia = Vec3f(155,155,0)
 
 ### 7. 高光贴图呈紫色的原因
 
-![image-20210408161414753](C:\Users\asus\AppData\Roaming\Typora\typora-user-images\image-20210408161414753.png)
+![image-20210408161414753](D:\project\zjx\GameDevoplement\SoftRasterizer\output\7-1.png)
 
 高光贴图只有r有值，我一开始以为是rgb，分了三个ks，得出来的结果偏紫，后来才发现读的图片像素颜色是(r,0,0)
 
@@ -127,20 +160,47 @@ ka --> (0 - 1)  Ia = Vec3f(155,155,0)
 
 ### 8. bling-phong模型中 h 和 normal夹角的正负
 
+h为光照方向与相机方向的夹角。
 
+在程序设置是，光照向量方向为:光源-->point 。相机向量方向为 相机->point.
+
+那么得到的h与normal的夹角为钝角，应对h取反。  
 
 
 
 ###  9.Shadow mapping 中，一直只索引到shadow_buffer的一个点。
 
-![image-20210409144347100](C:\Users\asus\AppData\Roaming\Typora\typora-user-images\image-20210409144347100.png)
+![image-20210409144347100](D:\project\zjx\GameDevoplement\SoftRasterizer\output\91.png)
 
 
 
 ### 10.Shadow mapping 中 light使用正交投影和透视投影的区别
 
+- view坐标下的物体z值 ，会在透视投影中压向视锥体的远平面（GAMES101扩展部分）
+
+- 而正交投影只是简单把物体映射到[-1,1]^3 之间，不会影响相对位置关系。
+
 
 
 ### 11.Shadow mapping中 摩尔纹的问题
 
-![image-20210409211406998](C:\Users\asus\AppData\Roaming\Typora\typora-user-images\image-20210409211406998.png)
+![image-20210409211406998](D:\project\zjx\GameDevoplement\SoftRasterizer\output\11-1.png)![image-20210410110113770](D:\project\zjx\GameDevoplement\SoftRasterizer\output\11-2.png)
+
+### 12.正交投影后，深度值超过了[-1,1]
+
+![image-20210410091243468](D:\project\zjx\GameDevoplement\SoftRasterizer\output\12-1.png)
+
+
+  阴影图的索引和screen coords的索引偏差很大。
+![image-20210410143526019](D:\project\zjx\GameDevoplement\SoftRasterizer\output\12-2.png)
+
+
+
+- 9、11、12的问题都是源自用float shadow_buffer[width * height] 数组的精度问题。
+- 解决方法:替换成TGAImage的纹理图像，对读取进来的数值映射回[-1,1]之间即可。
+
+
+
+### 13.对切线空间的理解
+
+![image-20210410195453464](D:\project\zjx\GameDevoplement\SoftRasterizer\output\13-1.png)
