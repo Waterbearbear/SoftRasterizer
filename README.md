@@ -1,6 +1,8 @@
 # SoftRasterizer
 
-该软光栅渲染器受  [ssloy](https://github.com/ssloy)/**[tinyrenderer](https://github.com/ssloy/tinyrenderer)** 启发与其教程的学习。为了更好地理解光栅化、实时渲染机器的知识，再次记录自己在开发软光栅渲染器中实现的效果以及遇到的问题。
+该软光栅渲染器基于  [ssloy](https://github.com/ssloy)/**[tinyrenderer](https://github.com/ssloy/tinyrenderer)** 启发与其教程的学习。
+
+为了更好地理解图形学中光栅化与实时渲染的知识。在此记录自己在开发软光栅渲染器中实现的效果以及遇到的问题。
 
  This Renderer is a software rasterizer written by C++ .The proposal for writing this is for better understanding computer graphics concept and knowledge.
 
@@ -40,6 +42,9 @@
 - [ ] SSAA
 - [ ] PCSS
 - [ ] Ambient Occlusion
+- [ ] 添加窗口
+- [ ] 窗口中光源的动态旋转
+- [ ] 窗口中相机的动态旋转
 
 ## ScreenShots
 
