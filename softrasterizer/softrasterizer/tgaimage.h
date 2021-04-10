@@ -45,6 +45,16 @@ struct TGAColor {
 		for (int i = 0; i < 4; i++) res.bgra[i] = bgra[i] * clamped;
 		return res;
 	}
+
+	TGAColor operator +(const TGAColor color) const {
+		TGAColor res = *this;
+		for (int i = 0; i < 4; i++)
+		{
+			res.bgra[i] += color.bgra[i];
+		}
+
+		return res;
+	}
 };
 
 class TGAImage {

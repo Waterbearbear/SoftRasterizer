@@ -3,7 +3,8 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
-//#include "geometry.h"
+#include "our_gl.h"
+
 
 
 #define pi 3.14151926
@@ -12,571 +13,377 @@ const TGAColor white = TGAColor(255, 255, 255, 255);
 const TGAColor red = TGAColor(255, 0, 0, 255);
 const TGAColor green = TGAColor(0, 255, 0, 255);
 
+const float ka = 0.1;
+const float kd = 1.0;
+const float ks = 0.5;
 
 const int width = 1024;
 const int height = 1024;
 
+float l = -1.5;
+float r = 1.5;
 
-void line(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) {
+float t = 1.5;
+float b = -1.5;
 
-	//利用贝塞尔曲线的方式画出直线
-	bool steep = false;
-	if (std::abs(x1 - x0) < std::abs(y1 - y0))
+float n = -0.1f;
+float f = -200.0f;
+
+float aspect_ratio = 1.0;
+float fov = 80;
+
+Vec3f camera_position(0.0f, 0.0f , 2.0f);
+Vec3f camera_lookat(0., 0., .0);
+Vec3f camera_up(0., 1., 0.);
+
+Vec3f light_position( -2.0f, 4.0f, 1.0f);
+Vec3f light_lookat(0.f, 0.f, 0.f);
+
+
+Vec3f tranlate(0.f, 0.f, -2.f);
+
+Matrix projection_mat = perspective_projection(n, f, aspect_ratio, fov);
+//Matrix light_projection_mat = perspective_projection(n, f, aspect_ratio, fov);
+
+Matrix light_projection_mat = Otho_projection(r, l, t, b, -1.5, -3.5);
+
+/*Matrix projection_mat = Otho_projection(r, l, t, b, n, f);*/
+
+//Matrix tranlate_mat = translate(0.f, tranlate, 0.f);
+
+Matrix view_mat = view(camera_position, camera_lookat, camera_up);
+Matrix light_view_mat = view(light_position, light_lookat, camera_up);
+
+Matrix viewport_mat = viewport(width, height);
+
+//const char *path = "D:\\project\\zjx\\GameDevoplement\\tinyrenderer\\obj\\diablo3_pose\\diablo3_pose.obj";
+const char *path = "D:\\project\\zjx\\GameDevoplement\\SoftRasterizer\\softrasterizer\\softrasterizer\\obj\\african_head\\african_head.obj";
+
+
+Vec3f light_dir = light_lookat - light_position;
+Vec3i ambient_light(0, 100, 200);
+
+Vec3f light(255.f, 255.f, 255.f);
+
+Matrix MVP = projection_mat * view_mat;
+Matrix MVP_it = MVP.invert_transpose();
+Matrix light_MVP =  light_projection_mat * light_view_mat;
+
+
+//Model *model = nullptr;
+Model *model = new Model(path);
+
+Vec3f h2v(Vec4f mat)
+{
+	//homogeneous to vector
+	return Vec3f(mat[0] / mat[3], mat[1] / mat[3], mat[2] / mat[3]);
+}
+
+Vec4f v2h(const Vec3f &vec)
+{
+	//Vect3f to homogeneous(Vec4f)
+	Vec4f temp;
+
+	temp[0] = vec.x;
+	temp[1] = vec.y;
+	temp[2] = vec.z;
+	temp[3] = 1.f;
+
+	return temp;
+}
+
+class ShadowShader :public Shader
+{
+public:
+	//ShadowShader
+	ShadowShader() = default;
+	ShadowShader(float vd = 1.f):view_depth(vd) {};
+
+	virtual Vec3f vertex(int iface, int nvert)
 	{
-		std::swap(x0, y0);
-		std::swap(x1, y1);
-		steep = true;
-	}
-	if (x0 > x1)
-	{
-		std::swap(x0, x1);
-		std::swap(y0, y1);
-	}
-	for (int x = x0; x < x1; x++)
-	{
-		float t = (x - x0) / float(x1 - x0);
-		int y = y0 * (1.0 - t) + y1 * t;
-		if (steep)
+		Vec3f world_coords = model->vert(iface, nvert);
+
+		Vec3f light_mvp_world_coords = h2v(light_MVP *v2h(world_coords));
+		/*if (iface == 0 && nvert == 0) view_depth = light_mvp_world_coords.z;*/
+		/*else if(std::abs(light_mvp_world_coords.z) > std::abs(view_depth))
 		{
-			image.set(y, x, color);
-		}
-		else
+			view_depth = light_mvp_world_coords.z;
+		}*/
+
+		//此时z在[-1,1]之间
+		varying_depth[nvert] = light_mvp_world_coords.z;
+
+		return  h2v(viewport_mat * v2h(light_mvp_world_coords));
+	}
+
+	virtual bool fragment(Vec3f bc, TGAColor &color)
+	{
+		
+		float depth = 0.f;
+		Vec3f view_direction(0.f, 0.f, 0.f);
+		Vec3f normal(0.f, 0.f, 0.f);
+
+		//TBN.invert_transpose();
+		TGAColor c(0.f, 0.f, 0.f);
+		
+		for (int i = 0; i < 3; i++)
 		{
-			image.set(x, y, color);
+			depth += varying_depth[i] * bc[i];
 		}
-	}
-	
+
+		c = TGAColor(255, 255, 255) *  (( depth * 0.5 + 0.5));
+		//for (int i = 0; i < 3; i++) c[i] = std::min<float>(ka * ambient_light[i] + kd * diffuse_color[i] * intensity, 255.0);
 
 
-	/*for (float t = 0.; t < 1; t += 0.01)
-	{
-		int x = x0 + t * (x1 - x0);
-		int y = y0 + t * (y1 - y0);
-
-		image.set(x, y, color);
-	}*/
-}
-
-void line(Vec2i t0, Vec2i t1, TGAImage &image, TGAColor color)
-{
-	bool steep = false;
-	int x0, y0, x1, y1;
-	/*if (t1.x > t0.x)
-	{
-		x0 = t1.x;
-	}*/
-	x0 = t0.x;
-	y0 = t0.y;
-	x1 = t1.x;
-	y1 = t1.y;
-	line(x0, y0, x1, y1, image, color);
-
-}
-
-
-
-void triangle(Vec2i t0, Vec2i t1, Vec2i t2, TGAImage &image, TGAColor color)
-{
-	line(t0, t1, image, color);
-	line(t1, t2, image, color);
-	line(t2, t0, image, color);
-}
-
-
-
-
-Vec3f barycentric(Vec2i *pts, Vec2i P) {
-
-
-	//计算在屏幕空间中的重心坐标
-	Vec3f u = Vec3f(pts[2].x - pts[0].x, pts[1].x - pts[0].x, pts[0].x - P.x) ^ Vec3f(pts[2].y - pts[0].y, pts[1].y - pts[0].y, pts[0].y - P.y);
-	/* `pts` and `P` has integer value as coordinates
-	   so `abs(u[2])` < 1 means `u[2]` is 0, that means
-	   triangle is degenerate, in this case return something with negative coordinates */
-	if (std::abs(u.z) < 1) return Vec3f(-1, 1, 1);
-	return Vec3f(1.f - (u.x + u.y) / u.z, u.y / u.z, u.x / u.z);
-}
-
-
-Vec3f barycentric(Vec3f *pts, Vec3i P)
-{
-	Vec3f uv1 = Vec3f(pts[2].x - pts[0].x, pts[1].x - pts[0].x, pts[0].x - P.x) ^ Vec3f(pts[2].y - pts[0].y, pts[1].y - pts[0].y, pts[0].y - P.y);
-	
-
-	if (std::abs(uv1.z) < 1) return Vec3f(-1, 1, 1);
-	return Vec3f(1.f - (uv1.x + uv1.y) / uv1.z, uv1.y / uv1.z, uv1.x / uv1.z);
-
-}
-
-bool  P_in_triangle(Vec2i *pts, Vec2i p)
-{
-	/*int cross_value_1 = pts[0].x * p.y + p.x * pts[0].y;
-	int cross_value_2 = */
-	//有溢出的问题
-
-	Vec2i vec_tri[3];
-	int cross_value[3];
-	Vec2i vec_p[3];
-	for (int i = 0; i < 3; i++)
-	{
-		vec_tri[i] = pts[(i + 1)%3] - pts[i];
-		vec_p[i] = p - pts[i];
-
-		cross_value[i] = vec_tri[i].x * vec_p[i].y - vec_p[i].x * vec_tri[i].y;
-
-	}
-	if (cross_value[0] * cross_value[1] < 0 || cross_value[0] * cross_value[2] < 0 || cross_value[1] * cross_value[2] < 0)
-	{
+		color = c;
+		//color = texture_color * intensity;
 		return false;
 	}
-	/*for (int i = 1; i < 3; i++)
-	{
-	
-	}*/
-	return true;
-}
 
-void fullfill_triangle(Vec2i t0, Vec2i t1, Vec2i t2, TGAImage &image, TGAColor color)
+private:
+	float varying_depth[3];
+	float view_depth;
+	//float max_depth;
+};
+
+class GouraudShader :public Shader
 {
-	if (t0.y > t1.y) std::swap(t0, t1);
-	if (t0.y > t2.y) std::swap(t0, t2);
-	if (t1.y > t2.y) std::swap(t2, t1);
+public:
+	Vec3f varying_intensity;
+	Vec3f vary_uv[3];
+	//Vec3f varying_view_vector[3];
+	float varying_light_distance[3];
+	Vec3f varying_view_direction[3];
+	Vec3f varying_normal[3];
+	Vec3f varying_world_coords[3];
+	//Vec3f screen_tri[3];
 
-	int total_height = t2.y - t0.y;
-	int segment_height_bottom = t1.y - t0.y + 1;
-	int segment_height_upper = t2.y - t1.y + 1;
+	//Vec3f  light_dir = h2v(viewport_mat * v2h(light_lookat - light_position));
 
-	for (int y = t0.y; y <=t2.y; y++)
+	float ka;
+	float kd;
+	float ks;
+	//Vec3f varying_texture;
+	GouraudShader() = default;
+	GouraudShader(float ambient,float *shadowbuffer) :ka(ambient),m_shadowbuffer(shadowbuffer)
 	{
-		if (y < t1.y)
+		
+	}
+
+	virtual Vec3f vertex(int iface, int nvert)
+	{
+
+		Vec3f n = model->noraml(iface, nvert);
+		/*TGAColor nTGA = model->nm_value(uv[0], uv[1]);
+		Vec3f n(nTGA[0], nTGA[1], nTGA[2]);*/
+
+		//uv 0.12452 0.45234 0.0000
+		Vec3f uv = model->texture(iface, nvert);
+		Vec3f world_coords = model->vert(iface, nvert);
+		Vec3f mvp_world_coords = h2v(viewport_mat * projection_mat * view_mat * v2h(world_coords));
+
+		//TGAColor texture_value = model->texture_value(uv.x, uv.y);
+		
+
+
+		n.normalize();
+		light_dir.normalize();
+
+		varying_world_coords[nvert] = world_coords;
+		//varying_intensity[nvert] = std::max(0.0f,  - (n * light_dir));
+		varying_light_distance[nvert] = ( world_coords - light_position).norm();
+
+		//相机空间中的方向,还是说应该在世界坐标下做变换
+		varying_view_direction[nvert] = mvp_world_coords;
+		varying_normal[nvert] = n;
+		vary_uv[nvert].x = uv.x;
+		vary_uv[nvert].y = uv.y;
+		vary_uv[nvert].z = 0.0;
+
+		/*varying_view_vector[nvert] = camera_position - */
+		return mvp_world_coords;
+	}
+
+	virtual bool fragment(Vec3f bc, TGAColor &color)
+	{
+		/*Vec3f u(0.0,0.0,0.0);
+		Vec3f v(1.0, 1.0, 1.0);*/
+		float u = 0.f;
+		float v = 0.f;
+		float distance = 0.f;
+		Vec3f view_direction(0.f ,0.f ,0.f );
+		Vec3f normal(0.f, 0.f, 0.f);
+		Vec3f screenCoords(0.f, 0.f, 0.f);
+		Vec3f world_Coords(0.f, 0.f, 0.f);
+
+		//插值
+		for (int i = 0; i < 3; i++)
 		{
-			float alpha = float( y - t0.y) / total_height;
-			float beta = float( y - t0.y) / segment_height_bottom;
-
-			auto A = t0 + (t2 - t0) * alpha;
-			auto B = t0 + (t1 - t0) * beta;
-
-			//line(A.x, y, B.x, y, image, color);
-			if (A.x > B.x)std::swap(A, B);
-			for (int j = A.x; j <= B.x; j++)
-			{
-				image.set(j, y, color);
-			}
-
+			u += vary_uv[i].x * bc[i];
+			v += vary_uv[i].y * bc[i];
+			distance += varying_light_distance[i] * bc[i];
+			view_direction = varying_view_direction[i] * bc[i] + view_direction;
+			normal = varying_normal[i] * bc[i] + normal;
+			screenCoords = varying_view_direction[i] * bc[i] + screenCoords;
+			world_Coords = varying_world_coords[i] * bc[i] + world_Coords;
 		}
-		else
+
+		
+		Mat3 TBN = calulateTBN(varying_world_coords, vary_uv, normal);
+		//TBN.invert_transpose();
+		TGAColor tangent_nm_TGA = model->nm_tangent_value(u, v);
+		Vec3f tangent_nm;
+
+		tangent_nm[0] = (tangent_nm_TGA[2] / 255.0) * 2.0 - 1.0;
+		tangent_nm[1] = (tangent_nm_TGA[1] / 255.0) * 2.0 - 1.0;
+		tangent_nm[2] = (tangent_nm_TGA[0] / 255.0) * 2.0 - 1.0;
+
+		/*for (int i = 0; i < 3; i++)
 		{
-			float alpha = float(y - t0.y) / total_height;
-			float beta = float( y - t1.y) / segment_height_upper;
+			tangent_nm[i] = (tangent_nm_TGA[i] / 255.0) * 2.0 - 1.0;
+		}*/
 
-			auto A = t0 + (t2 - t0) * alpha;
-			auto B = t1 + (t2 - t1) * beta;
+		tangent_nm = TBN * tangent_nm;
+		//float intensity = varying_intensity * bc;
+		//normal map in world
+		/*TGAColor normalTGA = model->nm_value(u, v);
+		Vec3f normal(normalTGA[0], normalTGA[1], normalTGA[2]);*/
+		tangent_nm.normalize();
+		normal = tangent_nm;
 
-			//line(A.x, y, B.x, y, image, color);
-			if (A.x > B.x)std::swap(A, B);
-			for (int j = A.x; j <= B.x; j++)
-			{
-				image.set(j, y, color);
-			}
-		}
-	}
+		//float intensity_test = normal * light_dir;
 
-	//triangle(t0, t1, t2, image, red);
+		float intensity = std::max(0.f,  - (normal * light_dir));
+
+		//normal.normalize();
+
+		/*if (intensity > 0.85) intensity = 1;
+		else if (intensity > 0.60) intensity = 0.8;
+		else if (intensity > 0.45) intensity = 0.6;
+		else if (intensity > 0.30) intensity = 0.45;
+		else if (intensity > 0.15) intensity = 0.30;
+		else intensity = 0;*/
 
 
-}
+		Vec3f all_light(1.0, 1.0, 1.0);
+		//Vec3f spcular_light(1.0, 1.0, 1.0);
+		Vec3f spcular_light(2.0f, 2.f, 2.0f);
 
-void fullfill_triangle_bc(Vec2i *tri, TGAImage &image, TGAColor color)
-{
-	Vec2i bboxmax(0, 0);
-	Vec2i bboxmin(image.get_width() - 1, image.get_height() - 1);
+		Vec3f ambinet_light(0, 55, 155);
+		Vec3f glow_light(0, 25, 25);
+		Vec3f h = (light_dir + view_direction).normalize() * -1 ;
 
-	
-	for (int i = 0; i < 3; i++)
-	{
-		if (tri[i].x > bboxmax.x) bboxmax.x = tri[i].x;
-		if (tri[i].x < bboxmin.x) bboxmin.x = tri[i].x;
-		if (tri[i].y > bboxmax.y) bboxmax.y = tri[i].y;
-		if (tri[i].y < bboxmin.y) bboxmin.y = tri[i].y;
-	}
+		TGAColor diffuse_color = model->texture_value(u, v);
+		TGAColor glow_color = model->glow_value(u, v);
+		TGAColor specular_color = model->spec_value(u, v);
+		TGAColor c;
 
-	Vec2i P;
-	for (P.x = bboxmin.x; P.x < bboxmax.x; P.x++)
-	{
-		for (P.y = bboxmin.y; P.y < bboxmax.y; P.y++)
+		Vec3f shadow_point(0.f, 0.f, 0.f);
+
+		
+		shadow_point = h2v(viewport_mat * light_MVP * v2h(world_Coords));
+		//shadow_point = h2v(light_MVP * MVP_it * v2h(screenCoords));
+
+		int idx = int(shadow_point[0] + shadow_point[1] * width);
+
+		float bias = std::max(0.5f * (1.0f - normal * light_dir),0.05f);
+
+
+		float shadow = 1.0  -  0.8 * (shadow_point.z - bias > m_shadowbuffer[idx]);
+
+		/*if (shadow_point.z < m_shadowbuffer[idx])
 		{
-			auto u = barycentric(tri, P);
-			if (u.x < 0 || u.y < 0 || u.z < 0) continue;
-			image.set(P.x, P.y, color);
+			std::cerr << "在这停顿!" << std::endl;
 		}
-	}
-}
+*/
 
-void fullfill_triangle_zbuffer(Vec3f *tri, float *zbuffer, TGAImage &image, TGAColor color)
-{
-	Vec2i bboxmax(0, 0);
-	Vec2i bboxmin(image.get_width() - 1, image.get_height() - 1);
-	int width = image.get_width();
-
-
-	for (int i = 0; i < 3; i++)
-	{
-		if (tri[i].x > bboxmax.x) bboxmax.x = tri[i].x;
-		if (tri[i].x < bboxmin.x) bboxmin.x = tri[i].x;
-		if (tri[i].y > bboxmax.y) bboxmax.y = tri[i].y;
-		if (tri[i].y < bboxmin.y) bboxmin.y = tri[i].y;
-	}
-
-	Vec3i P;
-	for (P.x = bboxmin.x; P.x < bboxmax.x; P.x++)
-	{
-		for (P.y = bboxmin.y; P.y < bboxmax.y; P.y++)
+		for(int i = 0; i < 3; i++)
 		{
-			float Pz = 0;
-			Vec3f interpo_coefficient = barycentric(tri, P);
-			if (interpo_coefficient.x < 0 || interpo_coefficient.y < 0 || interpo_coefficient.z < 0) continue;
+			//c[i] = std::min<float>(ka * ambient_light[i] +  diffuse_color[i] * (light[i]/distance)/255.0f * intensity +  (light[i] / distance) / 255.0f * specular_color[i] * std::pow(std::max(0.0f, normal * h),10), 255.0);
 
-			for (int i = 0; i < 3; i++)
-			{
-				Pz += interpo_coefficient[i] * tri[i].z;
-			}
-			if (zbuffer[P.x + P.y * width] < Pz)
-			{
-				zbuffer[P.x + P.y * width] = Pz;
-				image.set(P.x, P.y, color);
-			}
+			c[i] = std::min<float>(ka * ambient_light[i] + (diffuse_color[i] * intensity * all_light[i] + specular_color[0] * std::pow(std::max(0.0f, - (normal * h)), 5) * spcular_light[i]) * shadow + glow_color[i] * glow_light[i], 255.0);
 		}
-	}
-}
+		//for (int i = 0; i < 3; i++) c[i] = std::min<float>(ka * ambient_light[i] + kd * diffuse_color[i] * intensity, 255.0);
 
 
-void fullfill_triangle_zbuffer_texture(Vec3f *tri, float *zbuffer,Vec3f *texture_cords, TGAImage &image, TGAImage &texture_image,float intensity)
-{
-	Vec2i bboxmax(0, 0);
-	Vec2i bboxmin(image.get_width() - 1, image.get_height() - 1);
-	int width = image.get_width();
-
-	int texture_width = texture_image.get_width();
-	int texture_height = texture_image.get_height();
-
-	for (int i = 0; i < 3; i++)
-	{
-		if (tri[i].x > bboxmax.x) bboxmax.x = tri[i].x;
-		if (tri[i].x < bboxmin.x) bboxmin.x = tri[i].x;
-		if (tri[i].y > bboxmax.y) bboxmax.y = tri[i].y;
-		if (tri[i].y < bboxmin.y) bboxmin.y = tri[i].y;
+		color = c;
+		//color = texture_color * intensity;
+		return false;
 	}
 
-	Vec3i P;
-	for (P.x = bboxmin.x; P.x < bboxmax.x; P.x++)
-	{
-		for (P.y = bboxmin.y; P.y < bboxmax.y; P.y++)
-		{
-			float Pz = 0;
-			Vec2f P_texture;
-
-			Vec3f interpo_coefficient = barycentric(tri, P);
-
-			if(interpo_coefficient.x < 0 || interpo_coefficient.y < 0 || interpo_coefficient.z < 0) continue;
-
-			for (int i = 0; i < 3; i++)
-			{
-				Pz += interpo_coefficient[i] * tri[i].z;
-				P_texture.x  +=  texture_cords[i].x * interpo_coefficient[i];
-				P_texture.y  +=  texture_cords[i].y * interpo_coefficient[i];
-			}
-
-			if (zbuffer[P.x + P.y * width] < Pz)
-			{
-				zbuffer[P.x + P.y * width] = Pz;
-				
-				TGAColor color = texture_image.get((int) (P_texture.x * texture_width), (int)(P_texture.y * texture_height));
-				//TGAColor color2(255, 255, 255);
-				image.set(P.x, P.y, color * intensity);
-
-
-			}
-		}
-	}
-}
-
-
-
-
-Vec3f worldtoscreen(Vec3f world_cords)
-{
-	return Vec3f(int((world_cords.x + 1.)*width / 2), int((world_cords.y + 1.) * height / 2), world_cords.z);
-}
-
-Vec3f To_Homo_vec(Vec3f &vec , int x)
-{
-	Vec3f Homo_vec;
-
-	for (int i = 0; i < 4; i++)
-	{
-		if (i < 3)
-		{
-			Homo_vec[i] = vec[i];
-		}
-		else
-		{
-			Homo_vec[i] = x;
-		}
-	}
-
-	return Homo_vec;
-
-}
-
-
-Matrix rotate(const float &rotation,int axis)
-{
-	Matrix temp(4,4);
-
-	temp = temp.identity(4);
-
-	float arc = rotation / 180 * 3.14159;
-
-
-
-	return temp;
-}
-
-Matrix translate(const float &scale,const Vec3f &translation , const float &shear = 0)
-{
-	//Matrix rotation_mat(4, 4);
-	Matrix translation_mat;
-	translation_mat = translation_mat.identity(4);
-
-
-	translation_mat[0][3] = translation.x;
-	translation_mat[1][3] = translation.y;
-	translation_mat[2][3] = translation.z;
-
-
-
-
-	return translation_mat;
-
-}
-
-Matrix view(Vec3f camera_position,Vec3f camera_lookat,Vec3f camera_up)
-{
-	Matrix Tview;
-	//Matrix Rview;
-	
-
-	//g不是应该取反方向吗？
-	Vec3f z =    (camera_position - camera_lookat).normalize();
-	//g.normalize();
-	/*Vec3f t = camera_up;*/
-	Vec3f x = (camera_up ^ z).normalize();
-	Vec3f y = (z ^ x).normalize();
-	
-
-	//t.normalize();
-
-	//e.normalize();
-
-
-	Tview = Tview.identity(4);
-	Tview[0][3] = -camera_position.x;
-	Tview[1][3] = -camera_position.y;
-	Tview[2][3] = -camera_position.z;
-
-	Matrix Rview;
-	Rview = Rview.identity(4);
-
-	for (int i = 0; i < 3; i++) {
-		Rview[0][i] = x[i];
-		Rview[1][i] = y[i];
-		Rview[2][i] = z[i];
-		//Rview[i][3] = -Rview[i];
-	}
-
-	Rview[3][3] = 1.0;
-	
-
-	return Rview * Tview;
-}
-
-
-Matrix Otho_projection(float r, float l, float t,  float b,  float n,  float f)
-{
-	Matrix Otho_mat(4, 4);
-
-	Otho_mat = Otho_mat.identity(4);
-
-
-	/*if (r < l) std::swap(r,l);
-	if (t < b)std::swap(t, b);
-	if (n < f)std::swap(n, f);*/
-
-	Otho_mat[0][0] = 2 / (r - l);
-	Otho_mat[1][1] = 2 / (t - b);
-	Otho_mat[2][2] = 2 / (n - f);
-	Otho_mat[3][3] = 1;
-
-	Otho_mat[0][3] = -(r + l) / (r - l);
-	Otho_mat[1][3] = -(t + b) / (t - b);
-	Otho_mat[2][3] = -(n + f) / (n - f);
-
-	return Otho_mat;
-}
-
-Matrix Perspective_projection(float n, float f,float aspect_ratio,float fov)
-{
-	Matrix perspective(4,4);
-	perspective = perspective.identity(4);
-
-	//assert(n > f);
-
-	/*if (r < l) std::swap(r, l);
-	if (t < b)std::swap(t, b);
-	if (n < f)std::swap(n, f);*/
-
-	float arc_half_fov = pi * (fov / 2) / 180;
-	float t = std::abs(n)  * std::tan(arc_half_fov) ;
-	float r = aspect_ratio * t;
-
-	float b = -t;
-	float l = -r;
-
-
-	/*perspective[0][0] = 2 * n / (r - l);
-	perspective[1][1] = 2 * n / (t - b);
-	perspective[2][2] = (f + n) / (n - f);
-	perspective[3][3] = 0;
-
-
-	perspective[0][2] = (l + r) / (l - r);
-	perspective[1][2] = (b + t) / (b - t);
-	perspective[2][2] = (2 * f*n) / (f - n);
-	perspective[3][2] = 1;*/
-
-	/*perspective[0][0] = n;
-	perspective[1][1] = n;
-	perspective[2][2] = n + f;
-	perspective[2][3] = -f * n;
-	perspective[3][2] = 1;
-	perspective[3][3] = 0;
-	
-	Matrix otho_perject_mat = Otho_projection(r, l, t, b, n, f);*/
-
-	perspective[0][0] = 2 * n / (r - l);
-	perspective[0][2] = (l + r) / (l - r);
-	perspective[1][1] = 2 * n / (t - b);
-	perspective[1][2] = (b + t) / (b - t);
-	perspective[2][2] = (f + n) / (n - f);
-	perspective[2][3] = (2 * f * n) / (f - n);
-	perspective[3][2] = 1.0;
-	perspective[3][3] = 0.0;
-
-	//perspective[3][2] = -1.f / 1;
-
-	//为什么是这个顺序???
-	//return perspective * otho_perject_mat;
-	//return otho_perject_mat * perspective;
-	return perspective;
-
-
-}
-
-Matrix viewport(const float &width,const float &height)
-{
-	Matrix viewport_mat(4, 4);
-	viewport_mat = viewport_mat.identity(4);
-
-
-	viewport_mat[0][0] = width / 2.0;
-	viewport_mat[1][1] = height / 2.0;
-	viewport_mat[2][2] = 1.f;
-	viewport_mat[3][3] = 1.f;
-
-
-	viewport_mat[0][3] = (width )/ 2.0;
-	viewport_mat[1][3] = (height )/ 2.0;
-
-	return viewport_mat;
-}
-
-Vec3f m2v(Matrix mat)
-{
-	return Vec3f(mat[0][0]/mat[3][0], mat[1][0]/mat[3][0], mat[2][0]/mat[3][0]);
-}
-
-Matrix v2m(const Vec3f &vec)
-{
-	Matrix temp(4, 1);
-
-	temp[0][0] = vec.x;
-	temp[1][0] = vec.y;
-	temp[2][0] = vec.z;
-	temp[3][0] = 1.f;
-
-	return temp;
-}
-
-
+private:
+	float *m_shadowbuffer;
+
+
+};
+
+//void fullfill_triangle_zbuffer_texture(Vec3f *tri, TGAImage &zbuffer,Vec3f *texture_cords, TGAImage &image, TGAImage &texture_image,float intensity)
+//{
+//	Vec2i bboxmax(0, 0);
+//	Vec2i bboxmin(image.get_width() - 1, image.get_height() - 1);
+//	int width = image.get_width();
+//
+//	int texture_width = texture_image.get_width();
+//	int texture_height = texture_image.get_height();
+//
+//	for (int i = 0; i < 3; i++)
+//	{
+//		if (tri[i].x > bboxmax.x) bboxmax.x = tri[i].x;
+//		if (tri[i].x < bboxmin.x) bboxmin.x = tri[i].x;
+//		if (tri[i].y > bboxmax.y) bboxmax.y = tri[i].y;
+//		if (tri[i].y < bboxmin.y) bboxmin.y = tri[i].y;
+//	}
+//
+//	Vec3i P;
+//	for (P.x = bboxmin.x; P.x < bboxmax.x; P.x++)
+//	{
+//		for (P.y = bboxmin.y; P.y < bboxmax.y; P.y++)
+//		{
+//			float Pz = 0;
+//			Vec2f P_texture;
+//
+//			Vec3f interpo_coefficient = barycentric(tri, P);
+//
+//			if(interpo_coefficient.x < 0 || interpo_coefficient.y < 0 || interpo_coefficient.z < 0) continue;
+//
+//			for (int i = 0; i < 3; i++)
+//			{
+//				Pz += interpo_coefficient[i] * tri[i].z;
+//				P_texture.x  +=  texture_cords[i].x * interpo_coefficient[i];
+//				P_texture.y  +=  texture_cords[i].y * interpo_coefficient[i];
+//			}
+//
+//			if (zbuffer[P.x + P.y * width] < Pz)
+//			{
+//				zbuffer[P.x + P.y * width] = Pz;
+//				
+//				TGAColor color = texture_image.get((int) (P_texture.x * texture_width), (int)(P_texture.y * texture_height));
+//				//TGAColor color2(255, 255, 255);
+//				image.set(P.x, P.y, color * intensity);
+//
+//
+//			}
+//		}
+//	}
+//}
 
 int main(int argc, char** argv) {
-
-
-
 	//image坐标系以左下为原点
+	float *zbuffer = new float[width * height];
+	float *shadowBuffer = new float[width * height];
 
-	const char *path = "D:\\project\\zjx\\GameDevoplement\\SoftRasterizer\\softrasterizer\\softrasterizer\\obj\\african_head.obj" ;
-	const char *texture_path = "D:\\project\\zjx\\GameDevoplement\\SoftRasterizer\\softrasterizer\\softrasterizer\\obj\\african_head_diffuse.tga";
+	GouraudShader shader(ka, shadowBuffer);
+	ShadowShader shadowshader(f);
 
 	TGAImage image(width, height, TGAImage::RGB);
-	TGAImage texture_image;
+	TGAImage depth_image(width, height, TGAImage::RGB);
+
 	
-	texture_image.read_tga_file(texture_path);
+	TGAColor color(255, 255, 255);
+	TGAColor shadow_color(255, 255, 255);
 
-	texture_image.flip_vertically();
 
-	float *zbuffer = new float[width * height];
 	
-
-	Model obj(path);
-	Model *model = &obj;
-	float l = -1.0;
-	float r = 1.0;
-
-	float t = 2.0;
-	float b = -2.0;
-
-	float n = -0.1f;
-	float f = -200.0f;
-
-	float aspect_ratio = 1.0;
-	float fov = 80;
-
-	Vec3f camera_position(0.25, 0.5 , 1.25);
-	Vec3f camera_lookat(0., 0., .0);
-	Vec3f camera_up(0., 1., 0.);
-	
-
-	Vec3f light(0., 0., -1.0);
-	Vec3f tranlate(0.f, 0.f, -2.f);
-
-
-	Vec2i up_left(256, 256);
-	Vec2i up_right(512, 256);
-
-	Vec2i bottom_left(256, 512);
-	Vec2i bottom_right(512, 512);
-
-
-	Matrix perspective_mat = Perspective_projection(n,f,aspect_ratio,fov);
-
-	Matrix otho_mat = Otho_projection(r, l, t, b, n, f);
-
-	Matrix tranlate_mat = translate(0.f, tranlate, 0.f);
-
-	Matrix view_mat = view(camera_position, camera_lookat, camera_up);
-
-	Matrix viewport_mat = viewport(width, height);
 
 
 //	Model model(path);
@@ -674,68 +481,53 @@ int main(int argc, char** argv) {
 	//5. Z-buffer
 
 	std::cerr << view_mat << std::endl;
-	std::cerr << perspective_mat << std::endl;
+	std::cerr << projection_mat << std::endl;
 	std::cerr << viewport_mat << std::endl;
-	Matrix z = (viewport_mat*perspective_mat*view_mat);
+	std::cerr << "------------" << std::endl;
+	Matrix z = (viewport_mat*projection_mat*view_mat);
 	std::cerr << z << std::endl;
+	//fullfill shadow
 
-
-	for(int i = 0; i < model->nfaces(); i++)
+	std::cerr << "shadow vertexing" << std::endl;
+	for (int i = 0; i < model->nfaces(); i++)
 	{
-		std::vector<int> face = model->face(i);
-		std::vector<int> texture_face = model->texture_face(i);
-		Vec3f world_coords[3];
-		Vec3f texture_coords[3];
-		Vec3f screen_coords[3];
-
-		bool flag = false;
+		Vec3f light_screen_coords[3];
 		for (int j = 0; j < 3; j++)
 		{
-			Vec3f v = model->vert(face[j]);
-			texture_coords[j] = model->texture(texture_face[j]);
+			light_screen_coords[j] = shadowshader.vertex(i, j);
+			if (light_screen_coords[j].x > width) light_screen_coords[j].x = width;
+			if (light_screen_coords[j].x < 0)		light_screen_coords[j].x = 0;
+			if (light_screen_coords[j].y > height) light_screen_coords[j].y = height;
+			if (light_screen_coords[j].y < 0)		light_screen_coords[j].y = 0;
+		}
+		rasterizer(light_screen_coords, shadowshader, shadowBuffer, depth_image, shadow_color);
+	}
+	std::cerr << "shadow finished" << std::endl;
 
-			world_coords[j] = v;
+
+	depth_image.write_tga_file("african_shadow.tga");
 
 
-			screen_coords[j] = m2v(viewport_mat * perspective_mat * view_mat  * v2m(v));
 
+	std::cerr << "fragment vertexing" << std::endl;
+	for(int i = 0; i < model->nfaces(); i++)
+	{
+		Vec3f screen_coords[3];
 
+		for (int j = 0; j < 3; j++)
+		{
+			screen_coords[j] = shader.vertex(i, j);
 			if (screen_coords[j].x > width) screen_coords[j].x = width;
 			if (screen_coords[j].x < 0)		screen_coords[j].x = 0;
 			if (screen_coords[j].y > height) screen_coords[j].y = height;
 			if (screen_coords[j].y < 0)		screen_coords[j].y = 0;
-
-			/*if (screen_coords[j].x > width ||
-				(screen_coords[j].x < 0) ||
-				(screen_coords[j].y > height) ||
-				(screen_coords[j].y < 0))
-			{
-				flag = true;
-			}*/
 		}
-
-
-		Vec3f n = (world_coords[2] - world_coords[0]) ^ (world_coords[1] - world_coords[0]);
-		//Vec3f n = (screen_coords[2] - screen_coords[0]) ^ (screen_coords[1] - screen_coords[0]);
-		n.normalize();
-		auto intensity = n * light;
-
-		if (intensity > 0 && !flag )
-		{
-
-			/*fullfill_triangle_bc(screen_coords, image, tgacolor(intensity * 255, intensity * 255, intensity * 255, 255));*/
-			//fullfill_triangle_zbuffer(screen_coords, zbuffer, image, tgacolor(intensity * 255, intensity * 255, intensity * 255, 255));
-			fullfill_triangle_zbuffer_texture(screen_coords, zbuffer, texture_coords, image, texture_image, intensity);
-
-		}
-
-		//vec3f world_coords = model->vert(face[])
-
+		//fullfill_triangle_zbuffer_texture(screen_coords, zbuffer, texture_coords, image, texture_image, intensity);
+		rasterizer(screen_coords, shader, zbuffer, image, color);
 	}
-
-
-	//image.flip_vertically(); // i want to have the origin at the left bottom corner of the image
-	image.write_tga_file("perspective rendering_2.tga");
+	std::cerr << "fragment finished" << std::endl;
+	//image.flip_vertically();
+	image.write_tga_file("african_shadow_fragement.tga");
 	return 0;
 
 }
