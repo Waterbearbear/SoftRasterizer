@@ -49,17 +49,17 @@
 
 ![image-20210326160630849](https://github.com/Waterbearbear/SoftRasterizer/blob/main/output/texture.png?raw=true)
 
-  ![diabolo_show](D:\project\zjx\GameDevoplement\SoftRasterizer\output\diabolo_show.png)
+  ![diabolo_show](https://github.com/Waterbearbear/SoftRasterizer/blob/main/output/diabolo_show.png?raw=true)
 
 ### Rendering  
 
 
 
-![show1](D:\project\zjx\GameDevoplement\SoftRasterizer\output\show1.png)
+![show1](https://github.com/Waterbearbear/SoftRasterizer/blob/main/output/show1.png?raw=true)
 
-![diabolo_shadow_show](D:\project\zjx\GameDevoplement\SoftRasterizer\output\diabolo_shadow_show.png)
+![diabolo_shadow_show](https://github.com/Waterbearbear/SoftRasterizer/blob/main/output/diabolo_shadow_show.png?raw=true)
 
-![man_shadow_show](D:\project\zjx\GameDevoplement\SoftRasterizer\output\man_shadow_show.png)
+![man_shadow_show](https://github.com/Waterbearbear/SoftRasterizer/blob/main/output/man_shadow_show.png?raw=true)
 
 
 
@@ -74,9 +74,9 @@
 
 ### 1.渲染的图像有横纵裂纹  
 
-![image-20210405152927370](D:\project\zjx\GameDevoplement\SoftRasterizer\output\1-1.png)
+![image-20210405152927370](https://github.com/Waterbearbear/SoftRasterizer/blob/main/output/1-1.png?raw=true)
 
-![1-2](D:\project\zjx\GameDevoplement\SoftRasterizer\output\1-2.png)
+![1-2](https://github.com/Waterbearbear/SoftRasterizer/blob/main/output/1-2.png?raw=true)
 
 
 
@@ -89,7 +89,7 @@
 
 
 
-![QQ图片20210405153445](D:\project\zjx\GameDevoplement\SoftRasterizer\output\2-1.png)
+![](https://github.com/Waterbearbear/SoftRasterizer/blob/main/output/2-1.png?raw=true)
 
 
 
@@ -100,9 +100,9 @@
 ### 3. 图像变成了左手系的原因  
 
 
-![image-20210405153810153](D:\project\zjx\GameDevoplement\SoftRasterizer\output\3-1.png)
+![image-20210405153810153](https://github.com/Waterbearbear/SoftRasterizer/blob/main/output/3-1.png?raw=true)
 
-![image-20210405183213062](D:\project\zjx\GameDevoplement\SoftRasterizer\output\3-2.png)
+![image-20210405183213062](https://github.com/Waterbearbear/SoftRasterizer/blob/main/output/3-2.png?raw=true)
 
 - 正面的法线方向是朝着Z轴的，和朝着-z方向的光照 所成夹角应该是负的。 
 
@@ -110,7 +110,7 @@
 
 
 
-![image-20210405180353833](D:\project\zjx\GameDevoplement\SoftRasterizer\output\4-1.png)
+![image-20210405180353833](https://github.com/Waterbearbear/SoftRasterizer/blob/main/output/4-1.png?raw=true)
 
 
 
@@ -120,7 +120,7 @@
 
 
 
-![image-20210405184750541](D:\project\zjx\GameDevoplement\SoftRasterizer\output\5-1.png)
+![image-20210405184750541](https://github.com/Waterbearbear/SoftRasterizer/blob/main/output/5-1.png?raw=true)
 
 
 
@@ -132,7 +132,7 @@
 
 ### 6.Bling-Phong模型 （用ks 还是 I来描述颜色？）
 
-![preview](D:\project\zjx\GameDevoplement\SoftRasterizer\output\6-1.jpg)
+![preview](https://github.com/Waterbearbear/SoftRasterizer/blob/main/output/6-1.jpg?raw=true)
 
 
 
@@ -150,7 +150,7 @@ ka --> (0 - 1)  Ia = Vec3f(155,155,0)
 
 ### 7. 高光贴图呈紫色的原因
 
-![image-20210408161414753](D:\project\zjx\GameDevoplement\SoftRasterizer\output\7-1.png)
+![image-20210408161414753](https://github.com/Waterbearbear/SoftRasterizer/blob/main/output/7-1.png?raw=true)
 
 高光贴图只有r有值，我一开始以为是rgb，分了三个ks，得出来的结果偏紫，后来才发现读的图片像素颜色是(r,0,0)
 
@@ -170,7 +170,7 @@ h为光照方向与相机方向的夹角。
 
 ###  9.Shadow mapping 中，一直只索引到shadow_buffer的一个点。
 
-![image-20210409144347100](D:\project\zjx\GameDevoplement\SoftRasterizer\output\91.png)
+![image-20210409144347100](https://github.com/Waterbearbear/SoftRasterizer/blob/main/output/91.png?raw=true)
 
 
 
@@ -184,11 +184,11 @@ h为光照方向与相机方向的夹角。
 
 ### 11.Shadow mapping中 摩尔纹的问题
 
-![image-20210409211406998](D:\project\zjx\GameDevoplement\SoftRasterizer\output\11-1.png)![image-20210410110113770](D:\project\zjx\GameDevoplement\SoftRasterizer\output\11-2.png)
+![image-20210409211406998](https://github.com/Waterbearbear/SoftRasterizer/blob/main/output/11-1.png?raw=true)![image-20210410110113770](https://github.com/Waterbearbear/SoftRasterizer/blob/main/output/11-2.png?raw=true)
 
 ### 12.正交投影后，深度值超过了[-1,1]
 
-![image-20210410091243468](D:\project\zjx\GameDevoplement\SoftRasterizer\output\12-1.png)
+![image-20210410091243468](https://github.com/Waterbearbear/SoftRasterizer/blob/main/output/12-1.png?raw=true)
 
 
   阴影图的索引和screen coords的索引偏差很大。
@@ -203,4 +203,4 @@ h为光照方向与相机方向的夹角。
 
 ### 13.对切线空间的理解
 
-![image-20210410195453464](D:\project\zjx\GameDevoplement\SoftRasterizer\output\13-1.png)
+![](https://github.com/Waterbearbear/SoftRasterizer/blob/main/output/13-1.png?raw=true)
