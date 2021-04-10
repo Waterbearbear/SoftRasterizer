@@ -182,14 +182,13 @@ h为光照方向与相机方向的夹角。
 
 
 
-### 11.Shadow mapping中 摩尔纹的问题
+### 11.Shadow mapping中 自遮挡的问题
 
 ![image-20210409211406998](https://github.com/Waterbearbear/SoftRasterizer/blob/main/output/11-1.png?raw=true)![image-20210410110113770](https://github.com/Waterbearbear/SoftRasterizer/blob/main/output/11-2.png?raw=true)
 
 ### 12.正交投影后，深度值超过了[-1,1]
 
 ![image-20210410091243468](https://github.com/Waterbearbear/SoftRasterizer/blob/main/output/12-1.png?raw=true)
-
 
   阴影图的索引和screen coords的索引偏差很大。
 ![image-20210410143526019](D:\project\zjx\GameDevoplement\SoftRasterizer\output\12-2.png)
