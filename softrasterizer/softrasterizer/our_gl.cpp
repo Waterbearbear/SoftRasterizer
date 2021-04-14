@@ -237,8 +237,6 @@ Shader::~Shader()
 
 }
 
-
-
 void rasterizer(Vec3f *screen_tri, Shader &shader, float *zbuffer, TGAImage &image, TGAColor &color)
 {
 	Vec2i bboxmax(0.f, 0.f);

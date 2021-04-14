@@ -32,11 +32,11 @@ float f = -200.0f;
 float aspect_ratio = 1.0;
 float fov = 80;
 
-Vec3f camera_position(0.5f, 0.5f , 1.5f);
+Vec3f camera_position(0.25f, -0.2f , 1.25f);
 Vec3f camera_lookat(0., 0., .0);
 Vec3f camera_up(0., 1., 0.);
 
-Vec3f light_position( -1.0f, 1.0f, 0.50f);
+Vec3f light_position( -0.6f, 0.0f, 1.0f);
 Vec3f light_lookat(0.f, 0.f, 0.f);
 
 
@@ -54,8 +54,8 @@ Matrix light_view_mat = view(light_position, light_lookat, camera_up);
 
 Matrix viewport_mat = viewport(width, height);
 
-//const char *path = "D:\\project\\zjx\\GameDevoplement\\tinyrenderer\\obj\\diablo3_pose\\diablo3_pose.obj";
-const char *path = "D:\\project\\zjx\\GameDevoplement\\SoftRasterizer\\softrasterizer\\softrasterizer\\obj\\african_head\\african_head.obj";
+const char *path = "D:\\project\\zjx\\GameDevoplement\\tinyrenderer\\obj\\diablo3_pose\\diablo3_pose.obj";
+//const char *path = "D:\\project\\zjx\\GameDevoplement\\SoftRasterizer\\softrasterizer\\softrasterizer\\obj\\african_head\\african_head.obj";
 
 
 Vec3f light_dir = light_lookat - light_position;
@@ -246,7 +246,7 @@ public:
 		float intensity = std::max(0.f,  - (normal * light_dir));
 		Vec3f all_light(1.5, 1.5, 1.5);
 		//Vec3f spcular_light(1.0, 1.0, 1.0);
-		Vec3f spcular_light(5.f, 5.f, 5.0f);
+		Vec3f spcular_light(0.f, 5.0f, 10.0f);
 
 		/*Vec3f ambinet_light(10, 10, 20);*/
 		Vec3f glow_light(0, 25, 25);
@@ -285,7 +285,7 @@ public:
 		for(int i = 0; i < 3; i++)
 		{
 			//c[i] = std::min<float>(ka * ambient_light[i] +  diffuse_color[i] * (light[i]/distance)/255.0f * intensity +  (light[i] / distance) / 255.0f * specular_color[i] * std::pow(std::max(0.0f, normal * h),10), 255.0);
-			c[i] = std::min<float>(ka * ambient_light[i] + (diffuse_color[i] * intensity * all_light[i] + specular_color[0] * std::pow(std::max(0.0f,  (normal * h)),2) * spcular_light[i]) * shadow + glow_color[i] * glow_light[i], 255.0);
+			c[i] = std::min<float>(ka * ambient_light[i] + (diffuse_color[i] * intensity * all_light[i] + specular_color[0] * std::pow(std::max(0.0f,  (normal * h)),1) * spcular_light[i]) * shadow + glow_color[i] * glow_light[i], 255.0);
 		}
 
 		color = c;
@@ -328,14 +328,13 @@ int main(int argc, char** argv) {
 		for (int j = 0; j < 3; j++)
 		{
 			light_screen_coords[j] = shadowshader.vertex(i, j);
-			
 		}
 		rasterizer(light_screen_coords, shadowshader, shadowBuffer, depth_image, shadow_color);
 	}
 	std::cerr << "shadow finished" << std::endl;
 
 
-	depth_image.write_tga_file("african_shadow.tga");
+	depth_image.write_tga_file("diabolo_shadow.tga");
 
 	GouraudShader shader(ka, depth_image);
 
@@ -358,7 +357,7 @@ int main(int argc, char** argv) {
 	}
 	std::cerr << "fragment finished" << std::endl;
 	//image.flip_vertically();
-	image.write_tga_file("african_shadow_fragement.tga");
+	image.write_tga_file("diabolo_shadow_fragement.tga");
 	return 0;
 
 }
